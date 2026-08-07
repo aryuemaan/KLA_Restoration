@@ -1,0 +1,65 @@
+# =============================================================================
+#  WaveletSwinIR - base configuration
+#  Copy this file and tweak per experiment: `python scripts/train.py -c my.yaml`
+# =============================================================================
+
+model:
+  in_channels: 1          # grayscale inspection images
+  upscale: 1              # 1 = denoise/restore only; 2 or 4 to also super-resolve
+  embed_dim: 120          # transformer width (96 = light, 180 = classic SwinIR)
+  depths:    [6, 6, 6, 6, 6, 6]   # Swin layers per RSTB
+  num_heads: [6, 6, 6, 6, 6, 6]
+  window_size: 8          # attention window (input is padded to a multiple of 16)
+  mlp_ratio: 2.0
+  drop_path_rate: 0.1
+  img_range: 1.0
+
+# --- how clean images are degraded on the fly (synthetic mode) ----------------
+degradation:
+  blur_sigma:    [0.0, 1.2]    # Gaussian defocus blur
+  noise_sigma:   [2.0, 25.0]   # Gaussian read noise, in 0-255 units
+  poisson_scale: [0.0, 3.0]    # shot-noise strength; 0 disables
+  gray_noise_prob: 1.0
+  downsample_prob: 1.0         # only relevant when upscale > 1
+  quantize_bits: 0             # 0 disables detector-bit-depth quantisation
+
+# --- data ---------------------------------------------------------------------
+data:
+  mode: synthetic              # "synthetic" (clean-only) or "paired" (lq+gt)
+  train_dir: data/train        # folder of clean grayscale images
+  val_dir:   data/val
+  # for paired mode instead:
+  # train_lq_dir: data/train/lq
+  # train_gt_dir: data/train/gt
+  # val_lq_dir:   data/val/lq
+  # val_gt_dir:   data/val/gt
+  patch_size: 128
+  repeat: 20                   # oversample small datasets per epoch
+
+# --- loss ---------------------------------------------------------------------
+loss:
+  alpha: 1.0                   # Charbonnier weight
+  beta:  0.10                  # edge (Scharr/Sobel) weight
+  gamma: 0.20                  # SSIM weight
+  edge_kind: scharr            # "scharr" or "sobel"
+  charbonnier_eps: 1.0e-3
+  data_range: 1.0
+
+# --- training -----------------------------------------------------------------
+train:
+  device: cuda
+  out_dir: experiments/wswinir_x1
+  batch_size: 16
+  num_workers: 8
+  total_steps: 300000
+  warmup_steps: 2000
+  lr: 2.0e-4
+  weight_decay: 0.0
+  grad_clip: 1.0
+  amp: true                    # mixed precision
+  ema: true
+  ema_decay: 0.999
+  log_interval: 100
+  val_interval: 5000
+  save_interval: 5000
+  crop_border: 1               # ignore border pixels in PSNR/SSIM

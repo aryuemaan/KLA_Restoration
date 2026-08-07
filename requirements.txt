@@ -1,0 +1,22 @@
+# --- core ---
+torch>=2.1
+numpy>=1.24
+pyyaml>=6.0
+pillow>=9.5
+
+# --- training / logging ---
+tensorboard>=2.14
+tqdm>=4.65
+
+# --- export & deployment (optional but recommended) ---
+onnx>=1.15
+onnxsim>=0.4.33
+onnxruntime-gpu>=1.17    # or onnxruntime for CPU-only
+# tensorrt            # install matching your CUDA/driver (NVIDIA index)
+# pycuda              # needed only for the TensorRT python benchmark
+
+# --- demo (optional) ---
+gradio>=4.0
+
+# --- tests ---
+pytest>=7.4
